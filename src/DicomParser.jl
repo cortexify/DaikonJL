@@ -200,7 +200,7 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
 
     offset += length
 
-    tag = DicomTag.Tag(group, element, vr, value, offsetStart, offsetValue, offset) # TODO add endianness
+    tag = DicomTag.Tag(group, element, vr, value, false, offsetStart, offsetValue, offset) # TODO add endianness
 
     if (DicomTag.isTransformSyntax(tag))
         if (tag.value[1] == DicomParserConsts.TRANSFER_SYNTAX_IMPLICIT_LITTLE)
@@ -300,9 +300,9 @@ function parseSublistItem(parser::Parser, data::IO, offset, raw)
 
     sublistItemTag
     if (value != nothing)
-        sublistItemTag = DicomTag.Tag(group, element, nothing, value , offsetStart, offsetValue, offset) # TODO add endiannes
+        sublistItemTag = DicomTag.Tag(group, element, nothing, value, false, offsetStart, offsetValue, offset) # TODO add endiannes
     else 
-        sublistItemTag = DicomTag.Tag(group, element, nothing, tags, offsetStart, offsetValue, offset) # TODO add endiannes
+        sublistItemTag = DicomTag.Tag(group, element, nothing, tags, true, offsetStart, offsetValue, offset) # TODO add endiannes
     end
     return sublistItemTag
 end

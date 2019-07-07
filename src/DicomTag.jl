@@ -13,13 +13,18 @@ struct Tag
     preformatted::Bool # false
     id
 
-    function Tag(group, element, vr, value::IOBuffer, offsetStart, offsetValue, offsetEnd, littleEndian)
+    #TODO convert value to proper type
+    function Tag(group, element, vr, value::IOBuffer, isArray::Bool, offsetStart, offsetValue, offsetEnd, littleEndian)
         id = createId(group, element)
-        if (isa(value, Array)) # TODO check the right types
+        sublist = false
+        preformatted = false
+        if (isArray)
             sublist = true
         elseif (value != nothing)
-            convertedValue = convertValue(vr, value, littleEndian);
+            #TODO convert value to proper type here
+            #TODO set preformatted here according to converted value
         end
+        return new(group, element, vr, value, offsetStart, offsetValue, offsetEnd, sublist, preformatted, littleEndian, id)
     end
 end
 
@@ -241,6 +246,10 @@ function convertValue(vr::String, rawData::IOBuffer, littleEndian::Bool)
     end
 
     return data;
+end
+
+function getSingleStringValue(rawData::IO)
+    return [read(rawData, String)]
 end
 
 end
