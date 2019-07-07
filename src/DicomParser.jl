@@ -7,7 +7,6 @@ include("./DicomUtils.jl")
 include("./DicomParserConsts.jl")
 
 using CodecZlib
-using DicomTag
 
 export Parser
 

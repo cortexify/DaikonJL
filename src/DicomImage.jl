@@ -335,7 +335,7 @@ function getPixelDataBytes(image::Image)
     # end
 
     # TODO 
-    return image.tags[DicomTag.createId(DicomTag.TAG_PIXEL_DATA[1], DicomTag.TAG_PIXEL_DATA[2])].value.buffer
+    return image.tags[DicomTag.createId(DicomTag.TAG_PIXEL_DATA[1], DicomTag.TAG_PIXEL_DATA[2])].value
 end
 
 function getRawData(image::Image)

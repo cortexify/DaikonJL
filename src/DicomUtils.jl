@@ -38,4 +38,8 @@ function readpositionstring(io::IO, offset, len)
     return ret
 end
 
+function trim(inp::IO, offset) 
+    return 
+end
+
 end

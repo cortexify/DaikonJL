@@ -4,7 +4,8 @@ include("./DicomUtils.jl")
 struct Tag
     group
     element
-    vr
+    vr::String
+    value # 
     offsetStart
     offsetValue
     offsetEnd
@@ -12,12 +13,12 @@ struct Tag
     preformatted::Bool # false
     id
 
-    function Tag(group, element, vr, value, offsetStart, offsetValue, offsetEnd, littleEndian)
+    function Tag(group, element, vr, value::IOBuffer, offsetStart, offsetValue, offsetEnd, littleEndian)
         id = createId(group, element)
         if (isa(value, Array)) # TODO check the right types
             sublist = true
         elseif (value != nothing)
-            # TODO crate DataView like object possibly Image
+            convertedValue = convertValue(vr, value, littleEndian);
         end
     end
 end
@@ -176,5 +177,70 @@ function isMetaLength(tag::Tag)
     return (tag.group == TAG_META_LENGTH[1]) && (tag.element == TAG_META_LENGTH[2])
 end
 
+function convertValue(vr::String, rawData::IOBuffer, littleEndian::Bool) 
+    data = nothing
+
+    if (vr === "AE") 
+        data = getSingleStringValue(rawData, VR_AE_MAX_LENGTH)
+    elseif (vr === "AS")
+        data = getFixedLengthStringValue(rawData, VR_AS_MAX_LENGTH)
+    elseif (vr === "AT")
+        data = getUnsignedInteger16(rawData) # ADD endianness
+    elseif (vr === "JCS")
+        data = getStringValue(rawData)
+    elseif (vr === "DA")
+        data = getDateStringValue(rawData)
+    elseif (vr === "DS")
+        data = getDoubleStringValue(rawData)
+    elseif (vr === "DT")
+        data = getDateTimeStringValue(rawData)
+    elseif (vr === "FL")
+        data = getFloat32(rawData, littleEndian)
+    elseif (vr === "FD")
+        data = getFloat64(rawData, littleEndian)
+    elseif (vr === "FE")  
+        data = getDoubleElscint(rawData, littleEndian)
+    elseif (vr === "IS")
+        data = getIntegerStringValue(rawData)
+    elseif (vr === "LO")
+        data = getStringValue(rawData)
+    elseif (vr === "LT")
+        data = getSingleStringValue(rawData)
+    elseif (vr === "OB")
+        data = rawData
+    elseif (vr === "OD")
+        data = rawData
+    elseif (vr === "OF")
+        data = rawData
+    elseif (vr === "OW")
+        data = rawData
+    elseif (vr === "PN")
+        data = getPersonNameStringValue(rawData)
+    elseif (vr === "SH")
+        data = getStringValue(rawData)
+    elseif (vr === "SL")
+        data = getSignedInteger32(rawData, littleEndian)
+    elseif (vr === "SQ")
+        data = null
+    elseif (vr === "SS")
+        data = getSignedInteger16(rawData, littleEndian)
+    elseif (vr === "ST")
+        data = getSingleStringValue(rawData)
+    elseif (vr === "TM")
+        data = getTimeStringValue(rawData)
+    elseif (vr === "UI")
+        data = getStringValue(rawData)
+    elseif (vr === "UL")
+        data = getUnsignedInteger32(rawData, littleEndian)
+    elseif (vr === "UN")
+        data = rawData
+    elseif (vr === "US")
+        data = getUnsignedInteger16(rawData, littleEndian)
+    elseif (vr === "UT")
+        data = getSingleStringValue(rawData)
+    end
+
+    return data;
+end
 
 end
