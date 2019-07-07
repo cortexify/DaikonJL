@@ -130,7 +130,7 @@ function createId(group, element)
     return groupStr * elemStr
 end
 
-function getUnsignedInteger16(rawData::IOBuffer, T, littleEndian::bool)
+function getUnsignedInteger16(rawData::IOBuffer, T, littleEndian::Bool)
     data = []
     mul = length(rawData) / 2
     for ctr = 1:mul+1

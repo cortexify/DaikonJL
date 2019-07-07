@@ -1,4 +1,5 @@
 module DicomParser
+
 include("./DicomTagDicts.jl")
 include("./DicomTag.jl")
 include("./DicomImage.jl")
@@ -6,6 +7,7 @@ include("./DicomUtils.jl")
 include("./DicomParserConsts.jl")
 
 using CodecZlib
+using DicomTag
 
 export Parser
 
