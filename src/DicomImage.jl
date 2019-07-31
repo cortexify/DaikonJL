@@ -7,7 +7,7 @@ include("./DicomTag.jl")
 
 export Image
 
-struct Image
+mutable struct Image
     tags
     tagsFlat
     littleEndian::Bool

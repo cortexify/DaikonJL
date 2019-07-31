@@ -10,7 +10,7 @@ using CodecZlib
 
 export Parser
 
-struct Parser
+mutable struct Parser
     littleEndian::Bool
     explicit::Bool
     metaFound::Bool
