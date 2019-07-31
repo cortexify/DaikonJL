@@ -168,7 +168,7 @@ end
 function getDataScaleElscint(image::Image)
     scale = getSingleValueSafely(getTag(image, DicomTag.TAG_DATA_SCALE_ELSCINT[1], DicomTag.TAG_DATA_SCALE_ELSCINT[2]), 1)
 
-    if (scale == nothing || scale == 0.0)
+    if (scale === nothing || scale == 0.0)
         scale = 1
     end
 
@@ -256,7 +256,7 @@ function getAcquisitionMatrix(image::Image)
 
     mat[1] = getSingleValueSafely(getTag(image, DicomTag.TAG_ACQUISITION_MATRIX[1], DicomTag.TAG_ACQUISITION_MATRIX[2]), 1)
 
-    if (image.privateDataAll == nothing)
+    if (image.privateDataAll === nothing)
         image.privateDataAll = getAllInterpretedPrivateData(image)
     end
 
@@ -304,7 +304,7 @@ function putFlattenedTag(image::Image, tags, tag)
             putFlattenedTag(tags, tag.value[ctr+1])
         end
     else
-        if (get(tags, tag.id, nothing) == nothing)
+        if (get(tags, tag.id, nothing) === nothing)
             tag[tag.id] = tag
         end
     end

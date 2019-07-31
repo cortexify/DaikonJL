@@ -44,8 +44,8 @@ function parse(parser::Parser, data::IO)
 
             if (parser.needsDeflate && (tag.offsetEnd >= parser.metaFinishedOffset))
                 parser.needsDeflate = false
-                copyMeta = data.buffer[1: tag.offsetEnd +1]
-                copyDeflated = data.buffer[tag.offsetEnd +2:end]
+                copyMeta = data.buffer[1: tag.offsetEnd + 1]
+                copyDeflated = data.buffer[(tag.offsetEnd + 2):end]
                 parser.inflated = vcat(copyMeta, transcode(DeflateCompressor, data.data)) ### TODO zlib 
                 data = parser.inflated
             end
@@ -152,7 +152,7 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
 
     if (parser.explicit || !parser.metaFinished)
         vr = DicomUtils.readpositionstring(data, offset, 2)
-        if (!parser.metaFound && parser.metaFinished && (findfirst(vr, DicomParserConsts.VRS) == nothing))
+        if (!parser.metaFound && parser.metaFinished && (findfirst(vr, DicomParserConsts.VRS) === nothing))
             vr = DicomTagDicts.getVr(group, element)
             length = DicomUtils.readposition(data, offset, UInt32)
             offset += 4
@@ -183,10 +183,10 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
 
     isPixelData = (group == DicomTag.TAG_PIXEL_DATA[1]) && (element == DicomTag.TAG_PIXEL_DATA[2]);
 
-    if (vr == 'SQ') || (isPixelData && parser.encapsulation && (findfirst(vr, DicomParserConsts.DATA_VRS) != nothing))
-        value = parseSublist(parser, data, offset, length, vr !== 'SQ')
+    if (vr === "SQ") #|| (isPixelData && parser.encapsulation && (findfirst(vr, DicomParserConsts.DATA_VRS) !== nothing))
+        value = parseSublist(parser, data, offset, length, vr !== "SQ")
         if (length == DicomParserConsts.UNDEFINED_LENGTH)
-            length = value[len(value) - 1].offsetEnd - offset
+            length = value[length(value) - 1].offsetEnd - offset
         end
     elseif ((length > -1) && !testForTag)
         if (length == DicomParserConsts.UNDEFINED_LENGTH)
@@ -195,7 +195,7 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
             end
         end
 
-        value = data.buffer[offset + 1, offset + length +1]
+        value = data.buffer[(offset + 1),(offset + length +1)]
     end
 
     offset += length
@@ -286,7 +286,7 @@ function parseSublistItem(parser::Parser, data::IO, offset, raw)
         push!(tags, tag)
         offset = tag.offsetEnd
     elseif (raw != nothing)
-        value = data.buffer[offset + 1, offset + length +1]
+        value = data.buffer[(offset + 1), (offset + length +1)]
         offset = offset + length
     else 
         offsetEnd = offset + length
