@@ -1,11 +1,5 @@
 module DicomImage
-
-include("./DicomParserConsts.jl")
-include("./DicomUtils.jl")
-include("./DicomTag.jl")
-
-
-export Image
+import DaikonJL: DicomParserConsts, DicomUtils, DicomTag
 
 mutable struct Image
     tags
@@ -15,7 +9,7 @@ mutable struct Image
     decompressed::Bool
     privateDataAll
     convertedPalette::Bool
-    Image() = new(nothing, nothing, false, -1, false, nothing, false)
+    Image() = new(Dict{String, DicomTag.Tag}(), Dict{String, Any}(), false, -1, false, nothing, false)
 end
 
 const SLICE_DIRECTION_UNKNOWN = -1
@@ -153,9 +147,9 @@ function getImageMax(image::Image)
     return getSingleValueSafely(getTag(image, DicomTag.TAG_IMAGE_MAX[1], DicomTag.TAG_IMAGE_MAX[2]), 1)
 end
 
-function getImageMax(image::Image)
-    return getSingleValueSafely(getTag(image, DicomTag.TAG_IMAGE_MIN[1], DicomTag.TAG_IMAGE_MIN[2]), 1)
-end
+# function getImageMax(image::Image)
+#     return getSingleValueSafely(getTag(image, DicomTag.TAG_IMAGE_MIN[1], DicomTag.TAG_IMAGE_MIN[2]), 1)
+# end
 
 function getDataScaleSlop(image::Image)
     return getSingleValueSafely(getTag(image, DicomTag.TAG_DATA_SCALE_SLOPE[1], DicomTag.TAG_DATA_SCALE_SLOPE[2]), 1)
@@ -299,12 +293,12 @@ function putTag(image::Image, tag)
 end
 
 function putFlattenedTag(image::Image, tags, tag)
-    if(tag.sublist != nothing)
-        for ctr = 0:length(tag.value)
-            putFlattenedTag(tags, tag.value[ctr+1])
+    if(isdefined(tag, :sublist) && tag.sublist != nothing)
+        for ctr = 1:length(tag.value.data)
+            putFlattenedTag(image, tags, tag.value.data[ctr])
         end
     else
-        if (get(tags, tag.id, nothing) === nothing)
+        if (isdefined(tag, :id) && get(tags, tag.id, nothing) === nothing)
             tag[tag.id] = tag
         end
     end

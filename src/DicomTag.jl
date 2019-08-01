@@ -1,5 +1,5 @@
 module DicomTag
-include("./DicomUtils.jl")
+import DaikonJL: DicomUtils
 
 struct Tag
     group
@@ -11,6 +11,7 @@ struct Tag
     offsetEnd
     sublist::Bool # false
     preformatted::Bool # false
+    littleEndian::Bool
     id
 
     #TODO convert value to proper type
@@ -24,7 +25,8 @@ struct Tag
             #TODO convert value to proper type here
             #TODO set preformatted here according to converted value
         end
-        return new(group, element, vr, value, offsetStart, offsetValue, offsetEnd, sublist, preformatted, littleEndian, id)
+        # println(String(vr))
+        return new(group, element, String(vr), value, offsetStart, offsetValue, offsetEnd, sublist, preformatted, littleEndian, id)
     end
 end
 

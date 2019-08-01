@@ -1,0 +1,7 @@
+name = "DaikonJL"
+uuid = "4b98d8c2-b3ed-11e9-2f88-2b3c27b083d0"
+authors = ["Tarik Binar <ttarikbnr@gmail.com>", "Veli Can Kupeli <velican.kupeli@matriksdata.com>"]
+version = "0.1.0"
+
+[deps]
+CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
