@@ -125,13 +125,13 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
     # TODO Check length and return nothing if offset >= length 
     if (parser.metaFinished)
         little = parser.littleEndian
-        group = DicomUtils.readposition(data, offset, UInt16) # TODO add endianness
+        group = DicomUtils.readposition(data, offset, UInt16, little) # TODO add endianness
     else
-        group = DicomUtils.readposition(data, offset, UInt16) # TODO add endianness
+        group = DicomUtils.readposition(data, offset, UInt16, true) # TODO add endianness
         if ((parser.metaFinishedOffset != -1 && offset >= parser.metaFinishedOffset) || group != 0x0002)
             parser.metaFinished = true
             little = parser.littleEndian
-            group = DicomUtils.readposition(data, offset, UInt16) # TODO add endianness
+            group = DicomUtils.readposition(data, offset, UInt16, little) # TODO add endianness
         else 
             little = true
         end
@@ -142,30 +142,30 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
     end
 
     offset += 2
-    element = DicomUtils.readposition(data, offset, UInt16) # TODO add endianness
+    element = DicomUtils.readposition(data, offset, UInt16, little) # TODO add endianness
     offset += 2
 
     if (parser.explicit || !parser.metaFinished)
         vr = DicomUtils.readpositionstring(data, offset, 2)
         if (!parser.metaFound && parser.metaFinished && (vr in DicomParserConsts.DATA_VRS))
             vr = DicomTagDicts.getVr(group, element)
-            length = DicomUtils.readposition(data, offset, UInt32)
+            length = DicomUtils.readposition(data, offset, UInt32, little)
             offset += 4
             parser.explicit = false
         else 
             offset += 2
             if (vr in DicomParserConsts.DATA_VRS)
                 offset += 2
-                length = DicomUtils.readposition(data, offset, UInt32)
+                length = DicomUtils.readposition(data, offset, UInt32, little)
                 offset += 4
             else
-                length = DicomUtils.readposition(data, offset, UInt16)
+                length = DicomUtils.readposition(data, offset, UInt16, little)
                 offset += 2
             end
         end
     else 
         vr = DicomTagDicts.getVr(group, element)
-        length = DicomUtils.readposition(data, offset) # TODO add endianness
+        length = DicomUtils.readposition(data, offset, little)
 
         if (length == DicomParserConsts.UNDEFINED_LENGTH)
             vr = "SQ"
@@ -257,13 +257,13 @@ function parseSublistItem(parser::Parser, data::IO, offset, raw)
     sublistItemTag = nothing
     tags = []
 
-    group = DicomUtils.readposition(data, offset, UInt16) # TODO add endianness
+    group = DicomUtils.readposition(data, offset, UInt16, parser.littleEndian)
     offset += 2
 
-    element = DicomUtils.readposition(data, offset, UInt16) # TODO add endianness
+    element = DicomUtils.readposition(data, offset, UInt16, parser.littleEndian)
     offset += 2
 
-    length = DicomUtils.readposition(data, offset, UInt16) # TODO add endianness
+    length = DicomUtils.readposition(data, offset, UInt16, parser.littleEndian)
     offset += 4
 
     offsetValue = offset
