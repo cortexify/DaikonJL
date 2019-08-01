@@ -28,13 +28,10 @@ function parse(parser::Parser, data::IOBuffer)
         image = DicomImage.Image()
         offset = findFirstTagOffset(parser, data)
         tag = getNextTag(parser, data, offset, false)
-        println(tag)
         while (tag !== nothing)
-            println("Looping")
             DicomImage.putTag(image, tag)
 
             if (DicomTag.isPixelData(tag))
-                println("Found pixel data. Breaking..")
                 break
             end
 
@@ -126,7 +123,7 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
     little = true
     vr = nothing
     # TODO Check length and return nothing if offset >= length 
-    if (parser.metaFinished != nothing)
+    if (parser.metaFinished)
         little = parser.littleEndian
         group = DicomUtils.readposition(data, offset, UInt16) # TODO add endianness
     else
@@ -150,14 +147,14 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
 
     if (parser.explicit || !parser.metaFinished)
         vr = DicomUtils.readpositionstring(data, offset, 2)
-        if (!parser.metaFound && parser.metaFinished && (findfirst(x -> x==vr, DicomParserConsts.VRS) === nothing))
+        if (!parser.metaFound && parser.metaFinished && (vr in DicomParserConsts.DATA_VRS))
             vr = DicomTagDicts.getVr(group, element)
             length = DicomUtils.readposition(data, offset, UInt32)
             offset += 4
             parser.explicit = false
         else 
             offset += 2
-            if (findfirst(x -> x==DicomParserConsts.DATA_VRS, vr) != 0)
+            if (vr in DicomParserConsts.DATA_VRS)
                 offset += 2
                 length = DicomUtils.readposition(data, offset, UInt32)
                 offset += 4
@@ -188,7 +185,7 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
     elseif ((length > -1) && !testForTag)
         if (length == DicomParserConsts.UNDEFINED_LENGTH)
             if (isPixelData)
-                length = data.byteLength - offset # TODO this wont work
+                length = length(data.data)- offset
             end
         end
 
