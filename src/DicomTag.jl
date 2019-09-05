@@ -138,11 +138,11 @@ function createId(group, element)
     return groupStr * elemStr
 end
 
-function getUnsignedInteger16(rawData::IOBuffer, T, littleEndian::Bool)
+function getUnsignedInteger16(rawData::IOBuffer, littleEndian::Bool)
     data = []
     mul = length(rawData) / 2
     for ctr = 1:mul+1
-        push!(data, DicomUtils.readposition(rawData, (ctr * 2) - 1), T)
+        push!(data, DicomUtils.readposition(rawData, (ctr * 2) - 1, UInt16, littleEndian))
     end
 
     return data
@@ -192,7 +192,7 @@ function convertValue(vr::String, rawData::IOBuffer, littleEndian::Bool)
     elseif (vr === "AS")
         data = getFixedLengthStringValue(rawData, VR_AS_MAX_LENGTH)
     elseif (vr === "AT")
-        data = getUnsignedInteger16(rawData) # ADD endianness
+        data = getUnsignedInteger16(rawData, littleEndian) # ADD endianness
     elseif (vr === "JCS")
         data = getStringValue(rawData)
     elseif (vr === "DA")

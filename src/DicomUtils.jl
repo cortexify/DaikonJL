@@ -7,13 +7,17 @@ MIN_VALUE = -9007199254740991
 
 
 # TODO add endianness
-function readposition(io::IO, offset, T)
+function readposition(io::IO, offset, T, isLittleEndian::Bool)
     mark(io)
     seekstart(io)
     seek(io, offset)
     ret = read(io, T)
     reset(io)
-    return ret
+    if isLittleEndian
+        return htol(ret)
+    else 
+        return hton(ret)
+    end
 end
 
 function readpositionarray(io::IO, offset, nb=typemax(Int))
