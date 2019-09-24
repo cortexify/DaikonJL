@@ -19,14 +19,14 @@ struct Tag
         id = createId(group, element)
         sublist = false
         preformatted = false
-        if (isArray)
+        if isArray
             sublist = true
-        elseif (value != nothing)
-            #TODO convert value to proper type here
-            #TODO set preformatted here according to converted value
+        elseif value !== nothing
+            value = convertValue(vr, value, littleEndian)
+            # TODO set preformatted here according to converted value
         end
-        # println(String(vr))
-        return new(group, element, String(vr), value, offsetStart, offsetValue, offsetEnd, sublist, preformatted, littleEndian, id)
+
+        return new(group, element, vr, value, offsetStart, offsetValue, offsetEnd, sublist, preformatted, littleEndian, id)
     end
 end
 
@@ -140,9 +140,21 @@ end
 
 function getUnsignedInteger16(rawData::IOBuffer, littleEndian::Bool)
     data = []
-    mul = length(rawData) / 2
-    for ctr = 1:mul+1
-        push!(data, DicomUtils.readposition(rawData, (ctr * 2) - 1, UInt16, littleEndian))
+    mul = length(rawData.data) / 2
+    for ctr = 0:mul-1
+        # push!(data, DicomUtils.readposition(rawData, (ctr * 2) + 1, UInt16, littleEndian))
+        push!(data, read(rawData, UInt16))
+    end
+
+    return data
+end
+
+function getUnsignedInteger32(rawData::IOBuffer, littleEndian::Bool)
+    data = []
+    mul = length(rawData.data) / 4 
+    for ctr = 0:mul-1
+        # push!(data, DicomUtils.readposition(rawData, (ctr * 4) + 1, UInt32, littleEndian))
+        push!(data, read(rawData, UInt32))
     end
 
     return data
@@ -193,7 +205,7 @@ function convertValue(vr::String, rawData::IOBuffer, littleEndian::Bool)
         data = getFixedLengthStringValue(rawData, VR_AS_MAX_LENGTH)
     elseif (vr === "AT")
         data = getUnsignedInteger16(rawData, littleEndian) # ADD endianness
-    elseif (vr === "JCS")
+    elseif (vr === "CS")
         data = getStringValue(rawData)
     elseif (vr === "DA")
         data = getDateStringValue(rawData)
@@ -252,6 +264,23 @@ end
 
 function getSingleStringValue(rawData::IO)
     return [read(rawData, String)]
+end
+
+function getStringValue(rawData::IO)
+    ret = []
+    for str in split(read(rawData, String), '\\', keepempty=false)
+        push!(ret, string(str))
+    end
+    ret
+end
+
+function getDoubleStringValue(rawData::IO)
+    ret = []
+    println(read(rawData, String))
+    for str in split(read(rawData, String), '\\', keepempty=false)
+        push!(ret, parse(Float64,str))
+    end
+    ret
 end
 
 end

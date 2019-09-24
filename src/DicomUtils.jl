@@ -37,7 +37,7 @@ function readpositionstring(io::IO, offset, len)
     mark(io)
     seekstart(io)
     seek(io, offset)
-    ret = read(io, len)
+    ret = String(map(x-> Char(x), read(io, len)))
     reset(io)
     return ret
 end
