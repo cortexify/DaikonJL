@@ -113,6 +113,7 @@ function testForValidTag(parser::Parser, data::IOBuffer)
 end
 
 function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
+    println("getNextTag offset: ", offset)
     group = 0
     value = nothing
     offsetStart = offset
@@ -142,13 +143,19 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
         parser.metaFound = true
     end
 
-    offset += 2
-    element = DicomUtils.readposition(data, offset, UInt16, little)
+    # We read the group bytes increase offset by 2
     offset += 2
 
+    element = DicomUtils.readposition(data, offset, UInt16, little)
+    offset += 2 # We read the element bytes increase offset by 2
+
+    println("Group: ", group, " Element: ", element, " Vr offset: ", offset)
+
+    # Get VR and read length
     if (parser.explicit || !parser.metaFinished)
         vr = DicomUtils.readpositionstring(data, offset, 2)
-        if (!parser.metaFound && parser.metaFinished && (vr in DicomParserConsts.DATA_VRS))
+        println("VRRRR  : ", vr)
+        if !parser.metaFound && parser.metaFinished && !(vr in DicomParserConsts.DATA_VRS)
             vr = DicomTagDicts.getVr(group, element)
             length = DicomUtils.readposition(data, offset, UInt32, little)
             offset += 4
@@ -168,7 +175,7 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
         vr = DicomTagDicts.getVr(group, element)
         length = DicomUtils.readposition(data, offset, UInt32, little)
 
-        if (length == DicomParserConsts.UNDEFINED_LENGTH)
+        if length == DicomParserConsts.UNDEFINED_LENGTH
             vr = "SQ"
         end
 
@@ -194,7 +201,7 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
     end
 
     offset += length
-    println("VR ", String(vr))
+    println("VR :", String(vr))
 
     tag = DicomTag.Tag(group, element, vr, value, false, offsetStart, offsetValue, offset, little)
 
