@@ -3556,8 +3556,8 @@ function getVr(group::UInt16, element::UInt16)
     groupData = get(Dicts, group, nothing)
     elementData = nothing
     vr = nothing
-
-    if (groupData != nothing)
+    println(groupData)
+    if (groupData !== nothing)
         elementData = get(groupData, element, nothing)
         if (elementData != nothing)
             vr = elementData[1]
@@ -3566,7 +3566,7 @@ function getVr(group::UInt16, element::UInt16)
         end
     end
 
-    if (vr == nothing)
+    if (vr === nothing)
         groupData = get(DictsPrivate, group, nothing)
         if (groupData != nothing)
             elementData = get(groupData, element, nothing)
@@ -3576,7 +3576,7 @@ function getVr(group::UInt16, element::UInt16)
         end
     end
 
-    if (vr == nothing)
+    if (vr === nothing)
         vr = "OB"
     end
 

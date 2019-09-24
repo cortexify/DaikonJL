@@ -27,6 +27,13 @@ const BYTE_TYPE_FLOAT = 4
 const BYTE_TYPE_COMPLEX = 5
 const BYTE_TYPE_RGB = 6
 
+function Base.length(inp::Base.GenericIOBuffer)
+    length(inp.data)
+end
+
+function Base.length(inp::Base.IOBuffer)
+    length(inp.data)
+end
 
 skipPaletteConversion = false
 
@@ -293,12 +300,16 @@ function putTag(image::Image, tag)
 end
 
 function putFlattenedTag(image::Image, tags, tag)
-    if(isdefined(tag, :sublist) && tag.sublist != nothing)
-        for ctr = 1:length(tag.value.data)
-            putFlattenedTag(image, tags, tag.value.data[ctr])
+    if isdefined(tag, :sublist) && tag.sublist !== nothing
+        for ctr = 1:length(tag.value)
+            if typeof(tag.value) === Array{Any, 1} 
+                putFlattenedTag(image, tags, tag.value[ctr])
+            elseif typeof(tag.value) === Base.GenericIOBuffer{Array{UInt8,1}}
+                putFlattenedTag(image, tags, tag.value.data[ctr])
+            end
         end
     else
-        if (isdefined(tag, :id) && get(tags, tag.id, nothing) === nothing)
+        if isdefined(tag, :id) && get(tags, tag.id, nothing) === nothing
             tag[tag.id] = tag
         end
     end

@@ -125,12 +125,12 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
         return nothing
     end
 
-    if (parser.metaFinished)
+    if parser.metaFinished
         little = parser.littleEndian
         group = DicomUtils.readposition(data, offset, UInt16, little)
     else
         group = DicomUtils.readposition(data, offset, UInt16, true)
-        if ((parser.metaFinishedOffset != -1 && offset >= parser.metaFinishedOffset) || group != 0x0002)
+        if (parser.metaFinishedOffset != -1 && offset >= parser.metaFinishedOffset) || group != 0x0002
             parser.metaFinished = true
             little = parser.littleEndian
             group = DicomUtils.readposition(data, offset, UInt16, little) 
@@ -139,7 +139,7 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
         end
     end
 
-    if (!parser.metaFound && group == 0x0002)
+    if !parser.metaFound && group == 0x0002
         parser.metaFound = true
     end
 
@@ -152,7 +152,7 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
     println("Group: ", group, " Element: ", element, " Vr offset: ", offset)
 
     # Get VR and read length
-    if (parser.explicit || !parser.metaFinished)
+    if parser.explicit || !parser.metaFinished
         vr = DicomUtils.readpositionstring(data, offset, 2)
         println("VRRRR  : ", vr)
         if !parser.metaFound && parser.metaFinished && !(vr in DicomParserConsts.DATA_VRS)
@@ -183,21 +183,23 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
     end
     offsetValue = offset
 
+    println("length : ", length)
+
     isPixelData = (group == DicomTag.TAG_PIXEL_DATA[1]) && (element == DicomTag.TAG_PIXEL_DATA[2]);
 
-    if (vr === "SQ" || (isPixelData && parser.encapsulation && (vr in DicomParserConsts.DATA_VRS)))
+    if vr === "SQ" || (isPixelData && parser.encapsulation && (vr in DicomParserConsts.DATA_VRS))
         value = parseSublist(parser, data, offset, length, vr !== "SQ")
         if (length == DicomParserConsts.UNDEFINED_LENGTH)
             length = value[length(value) - 1].offsetEnd - offset
         end
-    elseif ((length > -1) && !testForTag)
-        if (length == DicomParserConsts.UNDEFINED_LENGTH)
+    elseif (length > -1) && !testForTag
+        if length == DicomParserConsts.UNDEFINED_LENGTH
             if (isPixelData)
                 length = length(data.data) - offset
             end
         end
 
-        value = IOBuffer(data.data[(offset + 1): (offset + length +1)])
+        value = IOBuffer(data.data[(offset + 1): (offset + length)])
     end
 
     offset += length
@@ -205,14 +207,14 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
 
     tag = DicomTag.Tag(group, element, vr, value, false, offsetStart, offsetValue, offset, little)
 
-    if (DicomTag.isTransformSyntax(tag))
-        if (tag.value[1] == DicomParserConsts.TRANSFER_SYNTAX_IMPLICIT_LITTLE)
+    if DicomTag.isTransformSyntax(tag)
+        if tag.value[1] == DicomParserConsts.TRANSFER_SYNTAX_IMPLICIT_LITTLE
             parser.explicit = false
             parser.littleEndian = true
-        elseif (tag.value[1] == DicomParserConsts.TRANSFER_SYNTAX_EXPLICIT_BIG)
+        elseif tag.value[1] == DicomParserConsts.TRANSFER_SYNTAX_EXPLICIT_BIG
             parser.explicit = true
             parser.littleEndian = false
-        elseif ( tag.value[1] == DicomParserConsts.TRANSFER_SYNTAX_COMPRESSION_DEFLATE)
+        elseif tag.value[1] == DicomParserConsts.TRANSFER_SYNTAX_COMPRESSION_DEFLATE
             parser.needsDeflate = true
             parser.explicit = true
             parser.littleEndian = true
@@ -221,7 +223,7 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
             parser.littleEndian = true
         end
     elseif (DicomTag.isMetaLength(tag))
-        parser.metaFinishedOffset = tag.value.data[1] + offset
+        parser.metaFinishedOffset = tag.value[1] + offset
     end
 
     return tag
