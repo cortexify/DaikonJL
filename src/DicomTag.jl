@@ -160,6 +160,14 @@ function getUnsignedInteger32(rawData::IOBuffer, littleEndian::Bool)
     return data
 end
 
+function getSingle(rawData::IOBuffer, T, littleEndian::Bool)
+    [read(rawData, T)]
+end
+
+function getArray(rawData::IOBuffer, T, littleEndian::Bool)
+    [read(rawData, T) for i in 0:(length(rawData.data)/sizeof(T)) - 1]
+end
+
 # NOTE toStrin is not written
 # NOTE toHtmlString is not written
 
@@ -204,7 +212,7 @@ function convertValue(vr::String, rawData::IOBuffer, littleEndian::Bool)
     elseif (vr === "AS")
         data = getFixedLengthStringValue(rawData, VR_AS_MAX_LENGTH)
     elseif (vr === "AT")
-        data = getUnsignedInteger16(rawData, littleEndian) # ADD endianness
+        data = getSingle(rawData, UInt16, littleEndian)
     elseif (vr === "CS")
         data = getStringValue(rawData)
     elseif (vr === "DA")
@@ -214,9 +222,9 @@ function convertValue(vr::String, rawData::IOBuffer, littleEndian::Bool)
     elseif (vr === "DT")
         data = getDateTimeStringValue(rawData)
     elseif (vr === "FL")
-        data = getFloat32(rawData, littleEndian)
+        data = getArray(rawData, Float32, littleEndian)
     elseif (vr === "FD")
-        data = getFloat64(rawData, littleEndian)
+        data = getArray(rawData, Float64, littleEndian)
     elseif (vr === "FE")  
         data = getDoubleElscint(rawData, littleEndian)
     elseif (vr === "IS")
@@ -238,11 +246,11 @@ function convertValue(vr::String, rawData::IOBuffer, littleEndian::Bool)
     elseif (vr === "SH")
         data = getStringValue(rawData)
     elseif (vr === "SL")
-        data = getSignedInteger32(rawData, littleEndian)
+        data = getArray(rawData, Int32, littleEndian)
     elseif (vr === "SQ")
         data = null
     elseif (vr === "SS")
-        data = getSignedInteger16(rawData, littleEndian)
+        data = getArray(rawData, Int16, littleEndian)
     elseif (vr === "ST")
         data = getSingleStringValue(rawData)
     elseif (vr === "TM")
@@ -250,11 +258,11 @@ function convertValue(vr::String, rawData::IOBuffer, littleEndian::Bool)
     elseif (vr === "UI")
         data = getStringValue(rawData)
     elseif (vr === "UL")
-        data = getUnsignedInteger32(rawData, littleEndian)
+        data = getArray(rawData, UInt32, littleEndian)
     elseif (vr === "UN")
         data = rawData
     elseif (vr === "US")
-        data = getUnsignedInteger16(rawData, littleEndian)
+        data = getArray(rawData, UInt16, littleEndian)
     elseif (vr === "UT")
         data = getSingleStringValue(rawData)
     end

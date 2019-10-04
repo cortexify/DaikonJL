@@ -183,8 +183,6 @@ function getNextTag(parser::Parser, data::IOBuffer, offset, testForTag)
     end
     offsetValue = offset
 
-    println("length : ", length)
-
     isPixelData = (group == DicomTag.TAG_PIXEL_DATA[1]) && (element == DicomTag.TAG_PIXEL_DATA[2]);
 
     if vr === "SQ" || (isPixelData && parser.encapsulation && (vr in DicomParserConsts.DATA_VRS))
