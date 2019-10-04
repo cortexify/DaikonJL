@@ -165,11 +165,16 @@ function getSingle(rawData::IOBuffer, T, littleEndian::Bool)
 end
 
 function getArray(rawData::IOBuffer, T, littleEndian::Bool)
-    [read(rawData, T) for i in 0:(length(rawData.data)/sizeof(T)) - 1]
+    [read(rawData, T) for i in 1:(length(rawData.data)/sizeof(T))]
 end
 
-# NOTE toStrin is not written
-# NOTE toHtmlString is not written
+function getFixedLengthStringValue(rawData::IOBuffer, maxlength::Int64)
+    [String(map(x-> Char(x), read(rawData, maxlength))) for i in 1:floor(length(rawData)/ maxlength)]
+end
+
+function getIntegerStringValue(rawData::IOBuffer)
+    [convert(Int16, c-48) for c in read(rawData, String)]
+end
 
 function isTransformSyntax(tag::Tag)
     return (tag.group == TAG_TRANSFER_SYNTAX[1]) && (tag.element == TAG_TRANSFER_SYNTAX[2]) 
